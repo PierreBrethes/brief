@@ -7,7 +7,7 @@ import { storageService } from './services/storageService';
 import Header from './components/Header';
 import SubjectCard from './components/SubjectCard';
 import TimelineItem from './components/TimelineItem';
-import { Loader2, ChevronRight, ChevronLeft, Download, RefreshCw } from 'lucide-react';
+import { Loader2, ChevronRight, ChevronLeft, Download, RefreshCw, Radio } from 'lucide-react';
 
 const App: React.FC = () => {
   const [state, setState] = useState<AppState>(AppState.SELECTING);
@@ -35,7 +35,7 @@ const App: React.FC = () => {
         });
       });
     } catch (err) {
-      setError("Erreur lors de la génération. Réessayez.");
+      setError("Échec de l'interconnexion. Réessayez.");
       setState(AppState.ERROR);
     }
   };
@@ -62,7 +62,7 @@ const App: React.FC = () => {
   };
 
   const handleRegenerate = () => {
-    if (selectedSubject && confirm("Voulez-vous vraiment écraser cette timeline ?")) {
+    if (selectedSubject && confirm("Lancer une nouvelle analyse IA ?")) {
       startGeneration(selectedSubject);
     }
   };
@@ -80,93 +80,106 @@ const App: React.FC = () => {
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
-      const amount = direction === 'left' ? -500 : 500;
+      const amount = direction === 'left' ? -600 : 600;
       scrollContainerRef.current.scrollBy({ left: amount, behavior: 'smooth' });
     }
   };
 
   return (
-    <div className="h-screen w-full flex flex-col bg-[#020617] text-white overflow-hidden">
+    <div className="h-screen w-full flex flex-col bg-transparent text-white overflow-hidden relative">
       <Header showBack={state !== AppState.SELECTING} onBack={handleBack} />
 
       <main className="flex-1 relative flex flex-col min-h-0 overflow-hidden">
         {state === AppState.SELECTING && (
-          <div className="flex-1 overflow-y-auto px-6 py-12">
-            <div className="max-w-6xl mx-auto space-y-12">
-              <div className="text-center space-y-4">
-                <h1 className="text-5xl md:text-7xl font-black tracking-tighter">
-                  SCI<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-600">TIME</span>
+          <div className="flex-1 overflow-y-auto px-6 py-12 relative">
+            <div className="max-w-6xl mx-auto space-y-16 relative z-10">
+              <div className="text-center space-y-6">
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <Radio className="w-4 h-4 text-blue-500 animate-pulse" />
+                  <span className="text-[10px] font-black tracking-[0.5em] text-blue-400 uppercase">
+                    Monitoring Global en temps réel
+                  </span>
+                </div>
+                <h1 className="text-7xl md:text-9xl font-black tracking-tighter leading-none italic uppercase">
+                  BRIEF<span className="text-blue-500">.</span>
                 </h1>
-                <p className="text-slate-400 text-lg max-w-xl mx-auto font-medium">
-                  Une odyssée temporelle à travers les découvertes qui ont façonné l'humanité.
+                <p className="text-slate-400 text-xl max-w-2xl mx-auto font-medium leading-relaxed opacity-80">
+                  L'outil de veille stratégique pour explorer les points d'inflexion historiques et scientifiques.
                 </p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-8">
                 {SUBJECTS.map((s) => (
                   <SubjectCard key={s.id} subject={s} onClick={handleSelectSubject} />
                 ))}
+              </div>
+
+              <div className="pt-20 text-center opacity-30">
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-[1em]">Intelligence Engine v2.5</p>
               </div>
             </div>
           </div>
         )}
 
         {state === AppState.LOADING && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-950/50 backdrop-blur-md z-50">
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-2xl z-50">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full border-t-2 border-blue-500 animate-spin" />
+              <div className="w-40 h-40 rounded-full border-t border-blue-500/30 animate-spin" />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 rounded-full border-b-2 border-indigo-500 animate-spin-reverse" />
+                <div className="w-24 h-24 rounded-full border-b border-indigo-500/30 animate-spin-reverse" />
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
               </div>
             </div>
-            <div className="mt-8 text-center space-y-2">
-              <h2 className="text-xl font-black uppercase tracking-[0.3em] text-white">Initialisation</h2>
-              <p className="text-slate-500 font-mono text-sm">Compilation des données pour {selectedSubject?.label}...</p>
+            <div className="mt-12 text-center space-y-4">
+              <h2 className="text-2xl font-black uppercase tracking-[0.5em] text-white italic">Analyse en cours</h2>
+              <p className="text-slate-500 font-mono text-[10px] uppercase tracking-widest">
+                Compilation du flux : {selectedSubject?.label}
+              </p>
             </div>
           </div>
         )}
 
         {state === AppState.VIEWING && selectedSubject && (
           <div className="flex-1 flex flex-col min-h-0 relative">
-            {/* Navigation & Controls */}
             <div className="absolute top-6 left-12 right-12 flex justify-between items-end z-40 pointer-events-none">
               <div className="pointer-events-auto space-y-2">
                 <div className="flex items-center gap-4">
-                  <h2 className={`text-5xl font-black bg-gradient-to-r ${selectedSubject.color} bg-clip-text text-transparent tracking-tighter uppercase`}>
+                  <h2 className={`text-6xl font-black bg-gradient-to-r ${selectedSubject.color} bg-clip-text text-transparent tracking-tighter uppercase italic`}>
                     {selectedSubject.label}
                   </h2>
                   {isFromCache && (
-                    <span className="px-3 py-1 rounded-full bg-white/5 text-[10px] text-blue-400 border border-blue-500/20 font-black uppercase tracking-widest">Archive</span>
+                    <span className="px-3 py-1 rounded bg-white/5 text-[9px] text-blue-400 border border-blue-500/20 font-black uppercase tracking-widest backdrop-blur-md">Local Archives</span>
                   )}
                 </div>
-                <div className="flex gap-4">
+                <div className="flex gap-8">
                   <button onClick={handleRegenerate} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all group">
-                    <RefreshCw className="w-3 h-3 group-hover:rotate-180 transition-transform duration-500" /> Régénérer
+                    <RefreshCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-700" /> Refresh Intelligence
                   </button>
                   <button onClick={handleExport} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white transition-all">
-                    <Download className="w-3 h-3" /> Exporter
+                    <Download className="w-3.5 h-3.5" /> Export Intelligence
                   </button>
                 </div>
               </div>
               
-              <div className="flex gap-3 pointer-events-auto">
-                <button onClick={() => scroll('left')} className="p-4 rounded-full bg-slate-900/80 backdrop-blur border border-white/5 text-slate-400 hover:text-white hover:scale-110 transition-all active:scale-95">
-                  <ChevronLeft className="w-6 h-6" />
+              <div className="flex gap-4 pointer-events-auto mb-2">
+                <button onClick={() => scroll('left')} className="p-5 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 text-slate-400 hover:text-white hover:scale-110 transition-all active:scale-95 shadow-2xl">
+                  <ChevronLeft className="w-8 h-8" />
                 </button>
-                <button onClick={() => scroll('right')} className="p-4 rounded-full bg-slate-900/80 backdrop-blur border border-white/5 text-slate-400 hover:text-white hover:scale-110 transition-all active:scale-95">
-                  <ChevronRight className="w-6 h-6" />
+                <button onClick={() => scroll('right')} className="p-5 rounded-full bg-white/5 backdrop-blur-2xl border border-white/10 text-slate-400 hover:text-white hover:scale-110 transition-all active:scale-95 shadow-2xl">
+                  <ChevronRight className="w-8 h-8" />
                 </button>
               </div>
             </div>
 
-            {/* Timeline Core */}
             <div className="flex-1 flex items-center relative overflow-hidden">
-              {/* Ligne d'Axe Centrale */}
-              <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-transparent via-slate-700 to-transparent z-10" />
-              <div className={`absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[60px] bg-gradient-to-r ${selectedSubject.color} opacity-5 blur-[40px] z-0`} />
+              <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent z-10" />
+              <div className={`absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[120px] bg-gradient-to-r ${selectedSubject.color} opacity-5 blur-[80px] z-0`} />
 
               <div 
                 ref={scrollContainerRef}
-                className="flex-1 h-full overflow-x-auto overflow-y-hidden px-[15vw] flex items-center scroll-smooth no-scrollbar"
+                className="flex-1 h-full overflow-x-auto overflow-y-hidden px-[10vw] flex items-center scroll-smooth no-scrollbar"
               >
                 <div className="flex h-full items-center">
                   {milestones.map((m, idx) => (
@@ -178,7 +191,7 @@ const App: React.FC = () => {
                       onUpdate={(updated) => handleUpdateMilestone(idx, updated)}
                     />
                   ))}
-                  <div className="w-[400px] flex-shrink-0" /> {/* Spacer fin */}
+                  <div className="w-[40vw] flex-shrink-0" />
                 </div>
               </div>
             </div>
